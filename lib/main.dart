@@ -28,19 +28,35 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var _counter = 0.0;
-  var myFontSize = 30.0;
+  var imageSource = "images/question-mark.png";
+  late TextEditingController _loginController;
+  late TextEditingController _passController;
 
-  void setNewValue(double value) {
-    setState(() {
-      myFontSize = value;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loginController = TextEditingController();
+    _passController = TextEditingController();
   }
-  void _incrementCounter() {
-    setState(() {
-      if(_counter < 100.0)
-        _counter++;
-    });
+
+  @override
+  void dispose() {
+    _loginController.dispose();
+    _passController.dispose();
+    super.dispose();
+  }
+
+  void buttonClicked() {
+    if(_passController.value.text == "QWERTY123") {
+      setState(() {
+        imageSource = "images/idea.png";
+      });
+    }
+    else {
+      setState(() {
+        imageSource = "images/stop.png";
+      });
+    }
   }
 
   @override
@@ -54,20 +70,27 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('You can change the size of this font with the slider.', style:TextStyle(fontSize:myFontSize)),
-            Text(
-              '$myFontSize',
-              style: TextStyle(fontSize:myFontSize),
+            TextField(controller: _loginController, decoration: InputDecoration(
+              hintText: "Type in your login information here...",
+              border: OutlineInputBorder(),
+              labelText: "Login",
+            )),
+            TextField(controller: _passController, obscureText:true, decoration: InputDecoration(
+              hintText: "Type in your password here...",
+              border: OutlineInputBorder(),
+              labelText: "Password"
+            )),
+            Padding(
+              padding: EdgeInsets.all(10.0),
+              child: ElevatedButton(
+                onPressed: buttonClicked,
+                child: Text("Login", style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold, color: Colors.blue)),
+              ),
             ),
-            Slider(value: myFontSize, max: 100.0, onChanged: setNewValue, min:0.0)
+            Image.asset(imageSource, width: 300, height: 300),
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _incrementCounter,
-      //   tooltip: 'Increment',
-      //   child: const Icon(Icons.add),
-      // ),
     );
   }
 }
