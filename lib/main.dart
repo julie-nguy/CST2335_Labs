@@ -10,11 +10,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'CST2335 Lab 3',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'BROWSE CATEGORIES'),
     );
   }
 }
@@ -28,67 +29,198 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var imageSource = "images/question-mark.png";
-  late TextEditingController _loginController;
-  late TextEditingController _passController;
-
-  @override
-  void initState() {
-    super.initState();
-    _loginController = TextEditingController();
-    _passController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _loginController.dispose();
-    _passController.dispose();
-    super.dispose();
-  }
-
-  void buttonClicked() {
-    if(_passController.value.text == "QWERTY123") {
-      setState(() {
-        imageSource = "images/idea.png";
-      });
-    }
-    else {
-      setState(() {
-        imageSource = "images/stop.png";
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30.0)),
+        centerTitle: true,
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(controller: _loginController, decoration: InputDecoration(
-              hintText: "Type in your login information here...",
-              border: OutlineInputBorder(),
-              labelText: "Login",
-            )),
-            TextField(controller: _passController, obscureText:true, decoration: InputDecoration(
-              hintText: "Type in your password here...",
-              border: OutlineInputBorder(),
-              labelText: "Password"
-            )),
-            Padding(
-              padding: EdgeInsets.all(10.0),
-              child: ElevatedButton(
-                onPressed: buttonClicked,
-                child: Text("Login", style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold, color: Colors.blue)),
+        child:
+        SingleChildScrollView( child:
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text("Not sure about exactly which recipe you're looking for? Do a search, or dive into our most popular categories.", textAlign: TextAlign.center),
+                  ]
+                ),
               ),
-            ),
-            Image.asset(imageSource, width: 300, height: 300),
-          ],
+              Text("BY MEAT", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25.0)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: <Widget>[
+                      CircleAvatar(
+                        backgroundImage: AssetImage('images/beef.jpg'),
+                        radius: 100
+                      ),
+                      Text("BEEF",
+                          style: TextStyle(fontWeight: FontWeight.w600,
+                            fontSize: 30.0, color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 10.0,
+                                color: Colors.black45
+                              )]
+                          )
+                      ),
+                    ],
+                  ),
+                  Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: <Widget>[
+                      CircleAvatar(
+                          backgroundImage: AssetImage('images/chicken.jpg'),
+                          radius: 100
+                      ),
+                      Text("CHICKEN",
+                          style: TextStyle(fontWeight: FontWeight.w600,
+                              fontSize: 30.0, color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                    blurRadius: 10.0,
+                                    color: Colors.black45
+                                )]
+                          )
+                      ),
+                    ],
+                  ),
+                  Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: <Widget>[
+                      CircleAvatar(
+                          backgroundImage: AssetImage('images/pork.jpg'),
+                          radius: 100
+                      ),
+                      Text("PORK",
+                          style: TextStyle(fontWeight: FontWeight.w600,
+                              fontSize: 30.0, color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                    blurRadius: 10.0,
+                                    color: Colors.black45
+                                )]
+                          )
+                      ),
+                    ],
+                  ),
+                  Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: <Widget>[
+                      CircleAvatar(
+                          backgroundImage: AssetImage('images/seafood.jpg'),
+                          radius: 100
+                      ),
+                      Text("SEAFOOD",
+                          style: TextStyle(fontWeight: FontWeight.w600,
+                              fontSize: 30.0, color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                    blurRadius: 10.0,
+                                    color: Colors.black45
+                                )]
+                          )
+                      ),
+                    ],
+                  )
+                ],
+              ),
+              Text("BY COURSE", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25.0)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    children: [
+                      CircleAvatar(
+                          backgroundImage: AssetImage('images/mains.jpg'),
+                          radius: 100
+                      ),
+                      Text("Main Dishes", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500))
+                    ]
+                  ),
+                  Column(
+                    children: [
+                      CircleAvatar(
+                          backgroundImage: AssetImage('images/salad.jpg'),
+                          radius: 100
+                      ),
+                      Text("Salad Recipes", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500))
+                    ]
+                  ),
+                  Column(
+                    children: [
+                      CircleAvatar(
+                          backgroundImage: AssetImage('images/sides.jpg'),
+                          radius: 100
+                      ),
+                      Text("Side Dishes", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500))
+                    ]
+                  ),
+                  Column(
+                    children: [
+                      CircleAvatar(
+                          backgroundImage: AssetImage('images/crockpot.jpg'),
+                          radius: 100
+                      ),
+                      Text("Crockpot", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500))
+                    ]
+                  ),
+                ],
+              ),
+              Text("BY DESSERT", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25.0)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                      children: [
+                        CircleAvatar(
+                            backgroundImage: AssetImage('images/ice_cream.jpeg'),
+                            radius: 100
+                        ),
+                        Text("Ice Cream", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500))
+                      ]
+                  ),
+                  Column(
+                      children: [
+                        CircleAvatar(
+                            backgroundImage: AssetImage('images/brownies.jpg'),
+                            radius: 100
+                        ),
+                        Text("Brownies", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500))
+                      ]
+                  ),
+                  Column(
+                      children: [
+                        CircleAvatar(
+                            backgroundImage: AssetImage('images/pies.jpg'),
+                            radius: 100
+                        ),
+                        Text("Pies", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500))
+                      ]
+                  ),
+                  Column(
+                      children: [
+                        CircleAvatar(
+                            backgroundImage: AssetImage('images/cookies.jpg'),
+                            radius: 100
+                        ),
+                        Text("Cookies", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500))
+                      ]
+                  ),
+                ],
+              ),
+            ],
+          )
         ),
       ),
     );
