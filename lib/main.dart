@@ -40,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child:
         Padding(
-          padding: EdgeInsets.fromLTRB(30, 0, 30, 30),
+          padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
           child:
             SingleChildScrollView( child:
               Column(
