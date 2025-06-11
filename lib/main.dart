@@ -1,5 +1,7 @@
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'DataRepository.dart';
+import 'ProfilePage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,8 +17,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Lab 4'),
+      // home: const MyHomePage(title: 'Lab 4'),
       debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => MyHomePage(title: 'Lab 5'),
+        '/profilePage': (context) => ProfilePage(),
+      },
     );
   }
 }
@@ -55,6 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if(_passController.value.text == "QWERTY123") {
       setState(() {
         imageSource = "images/idea.png";
+        DataRepository.login = _loginController.value.text;
+        Navigator.pushNamed(context, '/profilePage');
       });
     }
     else {
@@ -128,6 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               prefs.setString("Login", _loginController.value.text); //save login to encrypted preferences
                               prefs.setString("Password", _passController.value.text); //save password to encrypted preferences
                               Navigator.pop(ctx); //close the pop-up
+                              buttonClicked();
                             },
                             child: Text("Yes"),
                           ),
@@ -136,11 +146,14 @@ class _MyHomePageState extends State<MyHomePage> {
                               EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
                               prefs.clear(); //remove saved data
                               Navigator.pop(ctx);
+                              buttonClicked();
                             },
                             child: Text("No"),
                           ),
                         ],
+
                       );
+
                     }
                   );
                 },
