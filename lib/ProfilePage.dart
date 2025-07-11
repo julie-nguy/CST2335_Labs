@@ -60,6 +60,8 @@ class ProfilePageState extends State<ProfilePage> {
 
   @override
   void dispose() {
+    //could save data here
+
     _fNameController.dispose();
     _lNameController.dispose();
     _phoneController.dispose();

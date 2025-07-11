@@ -13,17 +13,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Lab 4',
+      title: 'Lab 6',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      // home: const MyHomePage(title: 'Lab 4'),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => MyHomePage(title: 'Lab 5'),
-        '/profilePage': (context) => ProfilePage(),
-      },
+      home: const MyHomePage(title: 'Lab 6'),
     );
   }
 }
@@ -37,66 +32,25 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var imageSource = "images/question-mark.png";
-  late TextEditingController _loginController;
-  late TextEditingController _passController;
+  late TextEditingController _itemController;
+  late TextEditingController _quantityController;
+
+  List<String> items = [ ]; //array for items
+  List<String> quantities = [ ]; //array for quantity
 
   @override
   void initState() {
     super.initState();
-    EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
-    getPreferences();
-
-    _loginController = TextEditingController();
-    _passController = TextEditingController();
+    _itemController = TextEditingController();
+    _quantityController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _loginController.dispose();
-    _passController.dispose();
+
+    _itemController.dispose();
+    _quantityController.dispose();
     super.dispose();
-  }
-
-  void buttonClicked() {
-    if(_passController.value.text == "QWERTY123") {
-      setState(() {
-        imageSource = "images/idea.png";
-        DataRepository.login = _loginController.value.text;
-        Navigator.pushNamed(context, '/profilePage');
-      });
-    }
-    else {
-      setState(() {
-        imageSource = "images/stop.png";
-      });
-    }
-  }
-
-  //get encrypted preferences for the application
-  void getPreferences() async {
-    EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
-    var login = await prefs.getString("Login");
-    var pass = await prefs.getString("Password");
-
-    if(login.isNotEmpty && pass.isNotEmpty) {
-      _loginController.text = login;
-      _passController.text = pass;
-      Future.delayed(Duration.zero, () {
-          var snackBar = SnackBar(
-              content: Text("Your login credentials have been saved."),
-              duration: const Duration(minutes: 2),
-              action: SnackBarAction(
-                  label: "Got it!",
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  }
-              )
-          );
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        }
-      );
-    }
   }
 
   @override
@@ -107,63 +61,113 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(controller: _loginController, decoration: InputDecoration(
-              hintText: "Type in your login information here...",
-              border: OutlineInputBorder(),
-              labelText: "Login",
-            )),
-            TextField(controller: _passController, obscureText:true, decoration: InputDecoration(
-              hintText: "Type in your password here...",
-              border: OutlineInputBorder(),
-              labelText: "Password"
-            )),
-            Padding(
-              padding: EdgeInsets.all(10.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext ctx)
-                    {
-                      return AlertDialog(
-                        title: Text("Would you like to save your username and password?"),
-                        actions: [
-                          FilledButton(
-                            onPressed: (){
-                              EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
-                              prefs.setString("Login", _loginController.value.text); //save login to encrypted preferences
-                              prefs.setString("Password", _passController.value.text); //save password to encrypted preferences
-                              Navigator.pop(ctx); //close the pop-up
-                              buttonClicked();
-                            },
-                            child: Text("Yes"),
-                          ),
-                          OutlinedButton(
-                            onPressed: (){
-                              EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
-                              prefs.clear(); //remove saved data
-                              Navigator.pop(ctx);
-                              buttonClicked();
-                            },
-                            child: Text("No"),
-                          ),
-                        ],
-
-                      );
-
-                    }
-                  );
-                },
-                child: Text("Login", style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold, color: Colors.blue)),
-              ),
-            ),
-            Image.asset(imageSource, width: 300, height: 300),
-          ],
+        child: Padding(padding: EdgeInsets.all(40),
+          child: ListPage(    )
         ),
       ),
+    );
+  }
+  Widget ListPage() {
+    return Column(children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(child: TextField(
+                  controller: _itemController,
+                  decoration: InputDecoration(
+                  labelText: "Type the item here",
+                  border: OutlineInputBorder(),
+                )
+            )),
+            Expanded(child: TextField(
+                  controller: _quantityController,
+                  decoration: InputDecoration(
+                  labelText: "Type the quantity here",
+                  border: OutlineInputBorder(),
+                )
+            )),
+            ElevatedButton(child: Text("Click here"), onPressed:() {
+              if(_itemController.value.text.isNotEmpty && _quantityController.value.text.isNotEmpty) {
+                setState((){
+                  var item = _itemController.value.text; //store values in variables
+                  var quantity = _quantityController.value.text;
+
+                  items.add(item); //add values to respective lists
+                  quantities.add(quantity);
+
+                  _itemController.text = ""; //clear textfields
+                  _quantityController.text = "";
+                });
+              }
+              else {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext ctx) {
+                    return AlertDialog(
+                      title: Text("Please input a value for both fields."),
+                      actions: [
+                        FilledButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                          },
+                          child: Text("OK"),
+                        )
+                      ]
+                    );
+                  }
+                );
+              }
+            })
+          ]
+        ),
+        //is there another way to do this?
+        items.length > 0 ?
+          Expanded(
+            child: ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, rowNumber) {
+              return
+                  GestureDetector(
+                    onLongPress: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext ctx) {
+                            return AlertDialog(
+                              title: Text("Would you like to delete this item?"),
+                              actions: [
+                                FilledButton(
+                                  onPressed: (){
+                                    setState((){
+                                      items.removeAt(rowNumber);
+                                      quantities.removeAt(rowNumber);
+                                    });
+                                    Navigator.pop(ctx);
+                                  },
+                                  child: Text("Yes"),
+                                ),
+                                OutlinedButton(
+                                  onPressed: (){
+                                    Navigator.pop(ctx);
+                                  },
+                                  child: Text("No"),
+                                ),
+                              ]
+                            );
+                          }
+                      );
+                    },
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("${rowNumber+1}: ${items[rowNumber]}  quantity: ${quantities[rowNumber]}")
+                        ]
+                    )
+                  );
+            }
+          )
+        )
+        : Text("There are no items in the list."),
+      ]
     );
   }
 }
