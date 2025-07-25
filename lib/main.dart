@@ -1,4 +1,9 @@
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'DataRepository.dart';
+import 'ProfilePage.dart';
+import 'ShoppingItem.dart';
+import 'ShoppingItemDatabase.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,11 +15,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Lab 6',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
+      home: const MyHomePage(title: 'Lab 6'),
     );
   }
 }
@@ -28,35 +34,41 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var imageSource = "images/question-mark.png";
-  late TextEditingController _loginController;
-  late TextEditingController _passController;
+  late TextEditingController _itemController;
+  late TextEditingController _quantityController;
+  late var myDAO;
+
+  List<ShoppingItem> shoppingList = [ ];
+  List<String> items = [ ]; //array for items
+  List<String> quantities = [ ]; //array for quantity
 
   @override
   void initState() {
     super.initState();
-    _loginController = TextEditingController();
-    _passController = TextEditingController();
+    _itemController = TextEditingController();
+    _quantityController = TextEditingController();
+
+    //open db
+    $FloorShoppingItemDatabase.databaseBuilder('app_database.db')
+        .build().then( (database) async {
+          myDAO = database.getDao;
+
+          var results = await myDAO.getAllShoppingItems();
+
+          setState(() {
+            //add results to our list:
+            shoppingList = results;
+          });
+
+        });
   }
 
   @override
   void dispose() {
-    _loginController.dispose();
-    _passController.dispose();
-    super.dispose();
-  }
 
-  void buttonClicked() {
-    if(_passController.value.text == "QWERTY123") {
-      setState(() {
-        imageSource = "images/idea.png";
-      });
-    }
-    else {
-      setState(() {
-        imageSource = "images/stop.png";
-      });
-    }
+    _itemController.dispose();
+    _quantityController.dispose();
+    super.dispose();
   }
 
   @override
@@ -67,30 +79,122 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(controller: _loginController, decoration: InputDecoration(
-              hintText: "Type in your login information here...",
-              border: OutlineInputBorder(),
-              labelText: "Login",
-            )),
-            TextField(controller: _passController, obscureText:true, decoration: InputDecoration(
-              hintText: "Type in your password here...",
-              border: OutlineInputBorder(),
-              labelText: "Password"
-            )),
-            Padding(
-              padding: EdgeInsets.all(10.0),
-              child: ElevatedButton(
-                onPressed: buttonClicked,
-                child: Text("Login", style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold, color: Colors.blue)),
-              ),
-            ),
-            Image.asset(imageSource, width: 300, height: 300),
-          ],
+        child: Padding(padding: EdgeInsets.all(40),
+          child: ListPage(    )
         ),
       ),
+    );
+  }
+  Widget ListPage() {
+    return Column(children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(child: TextField(
+                  controller: _itemController,
+                  decoration: InputDecoration(
+                  labelText: "Type the item here",
+                  border: OutlineInputBorder(),
+                )
+            )),
+            Expanded(child: TextField(
+                  controller: _quantityController,
+                  decoration: InputDecoration(
+                  labelText: "Type the quantity here",
+                  border: OutlineInputBorder(),
+                )
+            )),
+            ElevatedButton(child: Text("Click here"), onPressed:() {
+              setState((){
+                if(_itemController.value.text.isNotEmpty && _quantityController.value.text.isNotEmpty) {
+
+                    var item = _itemController.value.text; //store values in variables
+                    var quantity = _quantityController.value.text;
+
+                    // items.add(item); //add values to respective lists
+                    // quantities.add(quantity);
+
+                    var newItem = ShoppingItem(ShoppingItem.ID++, item, quantity);
+                    shoppingList.add(newItem);
+
+                    myDAO.addShoppingItem(newItem);
+
+                    _itemController.text = ""; //clear textfields
+                    _quantityController.text = "";
+
+                }
+                else {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext ctx) {
+                        return AlertDialog(
+                            title: Text("Please input a value for both fields."),
+                            actions: [
+                              FilledButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                },
+                                child: Text("OK"),
+                              )
+                            ]
+                        );
+                      }
+                  );
+                }
+              });
+
+            })
+          ]
+        ),
+        shoppingList.length > 0 ?
+          Expanded(
+            child: ListView.builder(
+            itemCount: shoppingList.length,
+            itemBuilder: (context, rowNumber) {
+              return
+                  GestureDetector(
+                    onLongPress: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext ctx) {
+                            return AlertDialog(
+                              title: Text("Would you like to delete this item?"),
+                              actions: [
+                                FilledButton(
+                                  onPressed: (){
+                                    //delete from db first
+                                    myDAO.deleteShoppingItem(shoppingList[rowNumber]);
+                                    setState((){
+                                      //delete from list
+                                      shoppingList.removeAt(rowNumber);
+                                    });
+                                    Navigator.pop(ctx);
+                                  },
+                                  child: Text("Yes"),
+                                ),
+                                OutlinedButton(
+                                  onPressed: (){
+                                    Navigator.pop(ctx);
+                                  },
+                                  child: Text("No"),
+                                ),
+                              ]
+                            );
+                          }
+                      );
+                    },
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("${rowNumber+1}: ${shoppingList[rowNumber].name}  quantity: ${shoppingList[rowNumber].quantity}")
+                        ]
+                    )
+                  );
+            }
+          )
+        )
+        : Text("There are no items in the list."),
+      ]
     );
   }
 }
