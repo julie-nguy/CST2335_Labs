@@ -2,6 +2,8 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'DataRepository.dart';
 import 'ProfilePage.dart';
+import 'ShoppingItem.dart';
+import 'ShoppingItemDatabase.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,7 +36,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late TextEditingController _itemController;
   late TextEditingController _quantityController;
+  late var myDAO;
 
+  List<ShoppingItem> shoppingList = [ ];
   List<String> items = [ ]; //array for items
   List<String> quantities = [ ]; //array for quantity
 
@@ -43,6 +47,20 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _itemController = TextEditingController();
     _quantityController = TextEditingController();
+
+    //open db
+    $FloorShoppingItemDatabase.databaseBuilder('app_database.db')
+        .build().then( (database) async {
+          myDAO = database.getDao;
+
+          var results = await myDAO.getAllShoppingItems();
+
+          setState(() {
+            //add results to our list:
+            shoppingList = results;
+          });
+
+        });
   }
 
   @override
@@ -87,44 +105,51 @@ class _MyHomePageState extends State<MyHomePage> {
                 )
             )),
             ElevatedButton(child: Text("Click here"), onPressed:() {
-              if(_itemController.value.text.isNotEmpty && _quantityController.value.text.isNotEmpty) {
-                setState((){
-                  var item = _itemController.value.text; //store values in variables
-                  var quantity = _quantityController.value.text;
+              setState((){
+                if(_itemController.value.text.isNotEmpty && _quantityController.value.text.isNotEmpty) {
 
-                  items.add(item); //add values to respective lists
-                  quantities.add(quantity);
+                    var item = _itemController.value.text; //store values in variables
+                    var quantity = _quantityController.value.text;
 
-                  _itemController.text = ""; //clear textfields
-                  _quantityController.text = "";
-                });
-              }
-              else {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext ctx) {
-                    return AlertDialog(
-                      title: Text("Please input a value for both fields."),
-                      actions: [
-                        FilledButton(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                          },
-                          child: Text("OK"),
-                        )
-                      ]
-                    );
-                  }
-                );
-              }
+                    // items.add(item); //add values to respective lists
+                    // quantities.add(quantity);
+
+                    var newItem = ShoppingItem(ShoppingItem.ID++, item, quantity);
+                    shoppingList.add(newItem);
+
+                    myDAO.addShoppingItem(newItem);
+
+                    _itemController.text = ""; //clear textfields
+                    _quantityController.text = "";
+
+                }
+                else {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext ctx) {
+                        return AlertDialog(
+                            title: Text("Please input a value for both fields."),
+                            actions: [
+                              FilledButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                },
+                                child: Text("OK"),
+                              )
+                            ]
+                        );
+                      }
+                  );
+                }
+              });
+
             })
           ]
         ),
-        //is there another way to do this?
-        items.length > 0 ?
+        shoppingList.length > 0 ?
           Expanded(
             child: ListView.builder(
-            itemCount: items.length,
+            itemCount: shoppingList.length,
             itemBuilder: (context, rowNumber) {
               return
                   GestureDetector(
@@ -137,9 +162,11 @@ class _MyHomePageState extends State<MyHomePage> {
                               actions: [
                                 FilledButton(
                                   onPressed: (){
+                                    //delete from db first
+                                    myDAO.deleteShoppingItem(shoppingList[rowNumber]);
                                     setState((){
-                                      items.removeAt(rowNumber);
-                                      quantities.removeAt(rowNumber);
+                                      //delete from list
+                                      shoppingList.removeAt(rowNumber);
                                     });
                                     Navigator.pop(ctx);
                                   },
@@ -159,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("${rowNumber+1}: ${items[rowNumber]}  quantity: ${quantities[rowNumber]}")
+                          Text("${rowNumber+1}: ${shoppingList[rowNumber].name}  quantity: ${shoppingList[rowNumber].quantity}")
                         ]
                     )
                   );
