@@ -15,12 +15,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Lab 6',
+      title: 'Lab 9',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigoAccent),
       ),
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(title: 'Lab 6'),
+      home: const MyHomePage(title: 'Lab 9'),
     );
   }
 }
@@ -37,6 +37,8 @@ class _MyHomePageState extends State<MyHomePage> {
   late TextEditingController _itemController;
   late TextEditingController _quantityController;
   late var myDAO;
+
+  ShoppingItem? selectedItem = null;
 
   List<ShoppingItem> shoppingList = [ ];
   List<String> items = [ ]; //array for items
@@ -80,11 +82,87 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Padding(padding: EdgeInsets.all(40),
-          child: ListPage(    )
+          child: responsiveLayout()
         ),
       ),
     );
   }
+
+  Widget responsiveLayout() {
+    var size = MediaQuery.of(context).size;
+    var height = size.height;
+    var width = size.width;
+
+    if((width > height) && (width > 720.0)) {
+      return Row(
+        children: [
+          Expanded(flex:1, child: ListPage()), //left with list
+          Expanded(flex:2, child: DetailsPage()) //right with details
+        ]
+      );
+    }
+    else {
+      // if nothing is selected; let user select something from list
+      if(selectedItem == null) {
+        return ListPage();
+      }
+      else {
+        return DetailsPage();
+      }
+    }
+  }
+
+  Widget DetailsPage() {
+    //check if item selected
+    if(selectedItem != null) {
+      //show details if so
+      return Column(children: [
+        Text("Item Name: ${selectedItem!.name}"),
+        Text("ID: ${selectedItem?.id}"),
+        Text("Quantity: ${selectedItem?.quantity}"),
+        ElevatedButton(
+          onPressed: (){
+            setState((){
+              //create index value
+              int idx = -1;
+
+              //loop through list;
+              for (int i = 0; i < shoppingList.length; i++)
+                {
+                  //if item at index i in shopping list == selected item, assign i as index
+                  if (shoppingList[i] == selectedItem)
+                    {
+                      idx = i;
+                      break;
+                    }
+                }
+              //should have a if statement that checks and throws exception here if the index is still -1
+              //but out of scope so
+              //delete from list
+              shoppingList.removeAt(idx);
+              //delete from db first
+              myDAO.deleteShoppingItem(selectedItem);
+
+              selectedItem = null;
+            });
+          },
+          child: Text("Delete Item")),
+        ElevatedButton(
+          onPressed: (){
+            setState((){
+              selectedItem = null;
+            });
+          },
+          child: Text("Close"),
+        )
+
+      ]);
+    }
+    else {
+      return Text(style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold), "Select or add an item to view its details.");
+    }
+  }
+
   Widget ListPage() {
     return Column(children: [
         Row(
@@ -182,6 +260,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             );
                           }
                       );
+                    },
+                    onTap: () {
+                      setState((){
+                        selectedItem = shoppingList[rowNumber];
+                      });
                     },
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
